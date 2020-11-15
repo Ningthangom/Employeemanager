@@ -1,5 +1,6 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
+var cTable  = require("console.table");
 
 // create the connection information for the sql database
 var connection = mysql.createConnection({
@@ -29,7 +30,7 @@ function start() {
     .prompt({
       name: "postOrBid",
       type: "list",
-      message: "Would you like to [POST] an auction or [BID] on an auction?",
+      message: "Would you like to [add] an employee, [view] employees or update thier details?",
       choices: ["add", "view", "update", "EXIT"]
     })
     .then(function(answer) {
@@ -39,12 +40,30 @@ function start() {
       }
       else if(answer.postOrBid === "update") {
         updateEmployee();
+      }else if (answer.postOrBid === "view") {
+          viewEmployee()
       } else{
         connection.end();
       }
     });
 }
+function viewEmployee(){
+  console.log("selection table from the database")
+  connection.query("SELECT * FROM employee", function(err,data) {
+    if (err) throw err;
+    
+    console.table(data);
+    console.log("made this view work today")
+  start();
+    
+    return data;
+  });
 
+
+  
+
+
+}
 // function to handle posting new items up for auction
 function addnewEmployee() {
   // prompt for info about the item being put up for auction
@@ -59,6 +78,16 @@ function addnewEmployee() {
         name: "last_name",
         type: "input", 
         message: "What is your last name? "
+      },
+      {
+        name: "deparmentid",
+        type: "input", 
+        message: "What is your department id? "
+      },
+      {
+        name: "roleid",
+        type: "input", 
+        message: "What is your role id in your department? "
       }
 /*       {
         name: "startingBid",
@@ -80,6 +109,9 @@ function addnewEmployee() {
         {
           first_name: answer.first_name,
           last_name: answer.last_name,
+          role_id: answer.roleid,
+          department_id: answer.departmentid
+
          /*  starting_bid: answer.startingBid || 0,
           highest_bid: answer.startingBid || 0 */
         },
@@ -105,6 +137,11 @@ function addEmployeeToRole () {
             message: "What is your role in this company? "
         },
         {
+          name: "departmentId",
+          type: "number",
+          message: "enter department id: "
+      },
+        {
             name: "salary",
             type: "input",
             message: "What is your salary ? "
@@ -117,6 +154,7 @@ function addEmployeeToRole () {
             {
               title: answer.role,
               salary: answer.salary,
+              department_id: answer.departmentId
              /*  starting_bid: answer.startingBid || 0,
               highest_bid: answer.startingBid || 0 */
             },
@@ -135,17 +173,18 @@ function addEmployeeToRole () {
 function addEmployeeToDepartment () {
     inquirer
     .prompt([
+   
         {
-            name: "department",
-            type: "input",
-            message: "Which department are you apart of? "
-        }
+          name: "department",
+          type: "input",
+          message: "enter departmet: "
+      }
     ])
     .then(function(answer) {
         connection.query( 
             "INSERT INTO department SET ?",
             {
-              name: answer.department,
+              name: answer.department
              /*  starting_bid: answer.startingBid || 0,
               highest_bid: answer.startingBid || 0 */
             },
@@ -172,7 +211,7 @@ function addEmployeeToDepartment () {
 
 function updateEmployee() {
   // query the database for all items being auctioned
-  connection.query("SELECT * FROM auctions", function(err, results) {
+  connection.query("SELECT * FROM employee", function(err, results) {
     if (err) throw err;
     // once you have the items, prompt the user for which they'd like to bid on
     inquirer
@@ -183,16 +222,17 @@ function updateEmployee() {
           choices: function() {
             var choiceArray = [];
             for (var i = 0; i < results.length; i++) {
-              choiceArray.push(results[i].item_name);
+              choiceArray.push(results[i].first_name);
             }
             return choiceArray;
           },
-          message: "What auction would you like to place a bid in?"
+          message: "what do you want to update?"
         },
         {
-          name: "bid",
-          type: "input",
-          message: "How much would you like to bid?"
+          name: "updateDetail",
+          type: "list",
+          message: "What would you like to change?",
+          choices: ["First Name", "last name", "Role", "EXIT"]
         }
       ])
       .then(function(answer) {
@@ -232,3 +272,5 @@ function updateEmployee() {
       });
   });
 }
+
+
