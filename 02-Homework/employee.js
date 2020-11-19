@@ -13,7 +13,7 @@ var connection = mysql.createConnection({
   user: "root",
 
   // Your password
-  password: "",
+  password: "Ning_thang_om_96",
   database: "employee_tracker_v2_db"
 });
 
@@ -28,25 +28,27 @@ connection.connect(function(err) {
 function start() {
   inquirer
     .prompt({
-      name: "postOrBid",
+      name: "todo",
       type: "list",
-      message: "Would you like to [add] an employee, [view] employees or update thier details?",
+      message: "Would you like to [add] an employee, [view] employees or update their details?",
       choices: ["add", "view", "update", "EXIT"]
     })
     .then(function(answer) {
       // based on their answer, either call the bid or the post functions
-      if (answer.postOrBid === "add") {
+      if (answer.todo === "add") {
         addnewEmployee();
       }
-      else if(answer.postOrBid === "update") {
-        updateEmployee();
-      }else if (answer.postOrBid === "view") {
+      else if(answer.todo === "update") {
+        updateEmployee ();
+      }else if (answer.todo === "view") {
           viewEmployee()
       } else{
         connection.end();
       }
     });
 }
+
+
 function viewEmployee(){
   console.log("selection table from the database")
   connection.query("SELECT * FROM employee", function(err,data) {
@@ -209,7 +211,7 @@ function addEmployeeToDepartment () {
 
 
 
-function updateEmployee() {
+/* function updateEmployee() {
   // query the database for all items being auctioned
   connection.query("SELECT * FROM employee", function(err, results) {
     if (err) throw err;
@@ -232,37 +234,18 @@ function updateEmployee() {
           name: "updateDetail",
           type: "list",
           message: "What would you like to change?",
-          choices: ["First Name", "last name", "Role", "EXIT"]
-        }
+         choices: ["First Name", "last name", "Role", "EXIT"] 
+        }  
       ])
       .then(function(answer) {
-        // get the information of the chosen item
-        var chosenItem;
-        for (var i = 0; i < results.length; i++) {
-          if (results[i].item_name === answer.choice) {
-            chosenItem = results[i];
-          }
+        // based on their answer, either call the bid or the post functions
+        if (answer.updateDetail === "First Name") {
+          updatefirstName();
         }
-
-        // determine if bid was high enough
-        if (chosenItem.highest_bid < parseInt(answer.bid)) {
-          // bid was high enough, so update db, let the user know, and start over
-          connection.query(
-            "UPDATE auctions SET ? WHERE ?",
-            [
-              {
-                highest_bid: answer.bid
-              },
-              {
-                id: chosenItem.id
-              }
-            ],
-            function(error) {
-              if (error) throw err;
-              console.log("Bid placed successfully!");
-              start();
-            }
-          );
+        else if(answer.updateDetail === "last name") {
+          updateEmployee();
+        }else if (answer.updateDetail === "Role") {
+            viewEmployee()
         }
         else {
           // bid wasn't high enough, so apologize and start over
@@ -274,3 +257,80 @@ function updateEmployee() {
 }
 
 
+
+function updatefirstName() {
+  inquirer
+  .prompt([
+      {
+          name: "firstName",
+          type: "input",
+          message: "First name :  "
+      },
+      {
+        name: "id",
+        type: "input",
+        message: "Enter the id of the employee:  "
+    }
+
+  ])
+  .then(function(answer) {
+ 
+    connection.query(
+      "UPDATE employee SET ? WHERE ?", function(err, results) {
+        if (err) throw err;
+      var chosenEmployee;
+      for (var i = 0; i < results.length; i++) {
+        if (results[i].first_name === answer.choice) {
+          chosenEmployee = results[i];
+        }
+      }
+      [
+        {
+          first_name: answer.firstName
+        },
+        {
+          id: chosenEmployee.id
+        }
+
+      ],
+      function(error) {
+        if (error) throw error;
+        console.log("First Name updated successfully!");
+        start();
+      }
+    }
+    );
+  })
+}
+ */
+
+
+function updateEmployee () {
+    //view function to see inner join employee and job_duty
+   // inquirer.prompt to update title and role
+    inquirer.prompt([{
+      name: "employee_id",
+      type: "number",
+      message: "Please enter [ID] of employee:",
+    },
+    {
+      name: "job_duty_id",
+      type: "number",
+      message: "Please enter [ID] of role:"
+    }, 
+  ]) 
+  .then((answer) => {
+    connection.query("UPDATE employee SET role_id = ? WHERE employee.id = ?", 
+    [ 
+      answer.role, 
+     answer.id,
+    ],
+    function(err, res) {
+      if (err) throw err;
+      console.table(res);
+      console.log("EMPLOYEE successfully updated!");
+      //Need to bring up different elements of the name
+      start();
+})
+    }
+  )}
