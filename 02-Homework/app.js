@@ -378,7 +378,7 @@ function updatelastName() {
               }
               return choiceArray;
             },
-            message: "Confirm the one that you want to change: "
+            message: "Confirm the last name that you want to change: "
           },
           {
             name: "lastName",
